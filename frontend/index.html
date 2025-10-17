@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TRADEco - Inicio</title>
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Estilos personalizados -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-light">
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg" style="background-color:#e6ede9;">
+    <div class="container">
+      <a class="navbar-brand fw-bold text-success d-flex align-items-center" href="index.html">
+        <i class="bi bi-tshirt me-2 text-success fs-4"></i> TRADEco
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto" id="navbarMenu">
+          <li class="nav-item"><a class="nav-link text-success" href="index.html">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link text-success" href="publicar.html">Publicar</a></li>
+          <li class="nav-item"><a class="nav-link text-success" href="perfil.html">Perfil</a></li>
+          <li class="nav-item"><a class="nav-link text-success" href="beneficios.html">Beneficios</a></li>
+          <!-- Se agregarán dinámicamente botones de login/logout -->
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="py-5 text-center" style="background-color:#f5f7f6;">
+    <div class="container">
+      <h1 class="fw-bold text-success">Bienvenido a TRADEco</h1>
+      <p class="lead text-secondary">Dale nueva vida a tu ropa, obtenÃ© descuentos y formÃ¡ parte de la moda circular.</p>
+      <a href="#productos" class="btn btn-success btn-lg mt-3">Explorar Productos</a>
+    </div>
+  </header>
+
+  <!-- BARRA DE BÚSQUEDA -->
+  <div class="container my-4">
+    <form class="d-flex" role="search" id="searchForm">
+      <input class="form-control me-2" type="search" id="searchInput" placeholder="Buscar prendas..." aria-label="Buscar">
+      <button class="btn btn-success" type="submit">Buscar</button>
+    </form>
+  </div>
+
+  <!-- CATEGORÍAS -->
+  <div class="container my-5">
+    <h2 class="mb-3 text-success">Categorías</h2>
+    <div class="d-flex flex-wrap gap-2" id="categoriesContainer">
+      <button class="btn btn-outline-success" data-categoria="Remeras">👕 Remeras</button>
+      <button class="btn btn-outline-success" data-categoria="Abrigos">🧥 Abrigos</button>
+      <button class="btn btn-outline-success" data-categoria="Pantalones">👖 Pantalones</button>
+      <button class="btn btn-outline-success" data-categoria="Vestidos">👗 Vestidos</button>
+      <button class="btn btn-outline-success" data-categoria="Calzado">👟 Calzado</button>
+      <button class="btn btn-outline-success" data-categoria="Accesorios">🎒 Accesorios</button>
+    </div>
+  </div>
+
+  <!-- PRENDAS RECIENTES -->
+  <div class="container" id="productos">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="text-success">Prendas recientes</h2>
+      <button class="btn btn-sm btn-outline-success" id="reloadProducts">
+        <i class="bi bi-arrow-clockwise"></i> Recargar
+      </button>
+    </div>
+    
+    <!-- Spinner de carga -->
+    <div id="loadingSpinner" class="text-center py-5">
+      <div class="spinner-border text-success" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-2 text-muted">Cargando productos...</p>
+    </div>
+    
+    <!-- Contenedor de productos -->
+    <div class="row g-4" id="productsContainer">
+      <!-- Los productos se cargarán aquí dinámicamente -->
+    </div>
+    
+    <!-- Mensaje cuando no hay productos -->
+    <div id="noProducts" class="text-center py-5" style="display: none;">
+      <i class="bi bi-inbox fs-1 text-muted"></i>
+      <p class="text-muted mt-3">No hay productos disponibles</p>
+      <a href="publicar.html" class="btn btn-success">Publica el primero</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="text-center py-3 mt-5" style="background-color:#e6ede9;">
+    <p class="mb-0 text-success">🌱 TRADEco - Moda Circular & Trueques</p>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- API Cliente -->
+  <script src="api.js"></script>
+  
+  <!-- Lógica de la página -->
+  <script>
+    // Actualizar navbar según estado de autenticación
+    function updateNavbarAuth() {
+      const navbarMenu = document.getElementById('navbarMenu');
+      const user = getUser();
+      
+      // Eliminar elementos anteriores de auth si existen
+      const existingAuthItems = navbarMenu.querySelectorAll('.auth-item');
+      existingAuthItems.forEach(item => item.remove());
+      
+      if (user) {
+        // Usuario autenticado - mostrar nombre y logout
+        navbarMenu.innerHTML += `
+          <li class="nav-item auth-item">
+            <span class="nav-link text-success">
+              <i class="bi bi-person-circle"></i> ${user.username}
+            </span>
+          </li>
+          <li class="nav-item auth-item">
+            <a class="nav-link text-danger" href="#" id="logoutBtn">
+              <i class="bi bi-box-arrow-right"></i> Salir
+            </a>
+          </li>
+        `;
+        
+        // Agregar evento de logout
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+          e.preventDefault();
+          if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
+            logout();
+          }
+        });
+      } else {
+        // Usuario no autenticado - mostrar botón de login
+        navbarMenu.innerHTML += `
+          <li class="nav-item auth-item">
+            <a class="nav-link text-success fw-bold" href="login.html">
+              <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+            </a>
+          </li>
+        `;
+      }
+    }
+    
+    // Cargar productos
+    async function loadProducts(filters = {}) {
+      const loadingSpinner = document.getElementById('loadingSpinner');
+      const productsContainer = document.getElementById('productsContainer');
+      const noProducts = document.getElementById('noProducts');
+      
+      loadingSpinner.style.display = 'block';
+      productsContainer.innerHTML = '';
+      noProducts.style.display = 'none';
+      
+      try {
+        const result = await getProducts(1, 20, filters);
+        
+        loadingSpinner.style.display = 'none';
+        
+        if (result.success && result.data.products.length > 0) {
+          result.data.products.forEach(product => {
+            const imageUrl = product.imagen_url 
+              ? `http://localhost:5000${product.imagen_url}` 
+              : 'https://via.placeholder.com/400x300';
+            
+            productsContainer.innerHTML += `
+              <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                  <img src="${imageUrl}" 
+                       class="card-img-top" 
+                       alt="${product.nombre}"
+                       style="height: 250px; object-fit: cover;"
+                       onerror="this.src='https://via.placeholder.com/400x300'">
+                  <div class="card-body">
+                    <span class="badge bg-success mb-2">${product.categoria}</span>
+                    <h5 class="card-title">${product.nombre}</h5>
+                    <p class="card-text text-muted small">${product.descripcion.substring(0, 80)}${product.descripcion.length > 80 ? '...' : ''}</p>
+                    <p class="card-text">Publicado por: <strong>@${product.username}</strong></p>
+                    <p class="fw-bold text-success fs-5">$${product.precio}</p>
+                    ${product.talla ? `<p class="text-muted small">Talla: ${product.talla}</p>` : ''}
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+        } else {
+          noProducts.style.display = 'block';
+        }
+      } catch (error) {
+        loadingSpinner.style.display = 'none';
+        showAlert('Error al cargar productos. Verifica que el backend esté corriendo.', 'danger');
+      }
+    }
+    
+    // Búsqueda de productos
+    document.getElementById('searchForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const query = document.getElementById('searchInput').value.trim();
+      
+      if (query) {
+        const result = await searchProducts(query);
+        
+        const productsContainer = document.getElementById('productsContainer');
+        const noProducts = document.getElementById('noProducts');
+        productsContainer.innerHTML = '';
+        
+        if (result.success && result.data.products.length > 0) {
+          noProducts.style.display = 'none';
+          result.data.products.forEach(product => {
+            const imageUrl = product.imagen_url 
+              ? `http://localhost:5000${product.imagen_url}` 
+              : 'https://via.placeholder.com/400x300';
+            
+            productsContainer.innerHTML += `
+              <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                  <img src="${imageUrl}" class="card-img-top" alt="${product.nombre}"
+                       style="height: 250px; object-fit: cover;"
+                       onerror="this.src='https://via.placeholder.com/400x300'">
+                  <div class="card-body">
+                    <span class="badge bg-success mb-2">${product.categoria}</span>
+                    <h5 class="card-title">${product.nombre}</h5>
+                    <p class="card-text text-muted small">${product.descripcion.substring(0, 80)}...</p>
+                    <p class="card-text">Publicado por: <strong>@${product.username}</strong></p>
+                    <p class="fw-bold text-success fs-5">$${product.precio}</p>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+        } else {
+          noProducts.style.display = 'block';
+        }
+      }
+    });
+    
+    // Filtrar por categoría
+    document.querySelectorAll('[data-categoria]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const categoria = btn.getAttribute('data-categoria');
+        await loadProducts({ categoria });
+      });
+    });
+    
+    // Botón recargar
+    document.getElementById('reloadProducts').addEventListener('click', () => {
+      loadProducts();
+    });
+    
+    // Inicializar al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+      updateNavbarAuth();
+      loadProducts();
+    });
+  </script>
+</body>
+</html>

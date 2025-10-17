@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TRADEco - Publicar</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-light">
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg" style="background-color:#e6ede9;">
+    <div class="container">
+      <a class="navbar-brand fw-bold text-success d-flex align-items-center" href="index.html">
+        <i class="bi bi-tshirt me-2 text-success fs-4"></i> TRADEco
+      </a>
+      <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link text-success" href="index.html">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link text-success active fw-bold" href="publicar.html">Publicar</a></li>
+          <li class="nav-item"><a class="nav-link text-success" href="perfil.html">Perfil</a></li>
+          <li class="nav-item"><a class="nav-link text-success" href="beneficios.html">Beneficios</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- FORMULARIO -->
+  <main class="container my-5">
+    <h2 class="text-success mb-4">
+      <i class="bi bi-upload"></i> Publicar una prenda
+    </h2>
+    
+    <form class="card shadow-sm p-4" id="publishForm">
+      <div class="mb-3">
+        <label class="form-label">Título de la prenda *</label>
+        <input type="text" class="form-control" id="nombre" placeholder="Ej: Campera de cuero negra" required>
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label">Descripción *</label>
+        <textarea class="form-control" rows="3" id="descripcion" placeholder="Detalles, estado y características..." required></textarea>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Categoría *</label>
+          <select class="form-select" id="categoria" required>
+            <option value="">Selecciona una categoría</option>
+            <option value="Remeras">Remeras</option>
+            <option value="Abrigos">Abrigos</option>
+            <option value="Pantalones">Pantalones</option>
+            <option value="Vestidos">Vestidos</option>
+            <option value="Calzado">Calzado</option>
+            <option value="Accesorios">Accesorios</option>
+          </select>
+        </div>
+        
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Talla *</label>
+          <select class="form-select" id="talla" required>
+            <option value="">Selecciona una talla</option>
+            <option value="XS">XS</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+            <option value="XXL">XXL</option>
+            <option value="Único">Talle único</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label">Precio (ARS) *</label>
+        <input type="number" class="form-control" id="precio" placeholder="Ej: 3000" min="0" required>
+        <small class="text-muted">Ingresa 0 si es gratis o para intercambio</small>
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label">Imagen de la prenda *</label>
+        <input type="file" class="form-control" id="imagen" accept="image/*" required>
+        <small class="text-muted">Formatos permitidos: JPG, PNG, GIF, WEBP (máx. 5MB)</small>
+      </div>
+      
+      <!-- Preview de imagen -->
+      <div class="mb-3" id="imagePreviewContainer" style="display: none;">
+        <label class="form-label">Vista previa:</label>
+        <div>
+          <img id="imagePreview" src="" alt="Preview" class="img-thumbnail" style="max-width: 300px;">
+        </div>
+      </div>
+      
+      <button type="submit" class="btn btn-success" id="submitBtn">
+        <i class="bi bi-upload"></i> Publicar
+      </button>
+    </form>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="text-center py-3 mt-5" style="background-color:#e6ede9;">
+    <p class="mb-0 text-success">🌱 TRADEco - Moda Circular & Trueques</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="api.js"></script>
+  
+  <script>
+    // Verificar autenticación al cargar la página
+    if (!isAuthenticated()) {
+      showAlert('Debes iniciar sesión para publicar productos', 'warning');
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 2000);
+    }
+    
+    // Preview de imagen
+    document.getElementById('imagen').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        // Validar tamaño (5MB máximo)
+        if (file.size > 5242880) {
+          showAlert('La imagen es muy grande. Máximo 5MB', 'danger');
+          e.target.value = '';
+          return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('imagePreview').src = e.target.result;
+          document.getElementById('imagePreviewContainer').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    // Manejar envío del formulario
+    document.getElementById('publishForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Validar que hay una imagen
+      const imagenInput = document.getElementById('imagen');
+      if (!imagenInput.files[0]) {
+        showAlert('Debes seleccionar una imagen', 'warning');
+        return;
+      }
+      
+      // Crear FormData con todos los campos
+      const formData = new FormData();
+      formData.append('nombre', document.getElementById('nombre').value);
+      formData.append('descripcion', document.getElementById('descripcion').value);
+      formData.append('categoria', document.getElementById('categoria').value);
+      formData.append('talla', document.getElementById('talla').value);
+      formData.append('precio', document.getElementById('precio').value);
+      formData.append('imagen', imagenInput.files[0]);
+      
+      // Deshabilitar botón mientras procesa
+      const btn = document.getElementById('submitBtn');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Publicando...';
+      
+      try {
+        const result = await createProduct(formData);
+        
+        if (result.success) {
+          showAlert('¡Producto publicado exitosamente!', 'success');
+          
+          // Limpiar formulario
+          document.getElementById('publishForm').reset();
+          document.getElementById('imagePreviewContainer').style.display = 'none';
+          
+          // Redirigir después de 2 segundos
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 2000);
+        } else {
+          showAlert(result.message, 'danger');
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+        }
+      } catch (error) {
+        showAlert('Error de conexión. Verifica que el backend esté corriendo.', 'danger');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    });
+  </script>
+</body>
+</html>

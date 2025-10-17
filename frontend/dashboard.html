@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - TRADEco Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7f6;
+            color: #364a3f;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* === Navbar === */
+        .navbar {
+            background-color: #9fb9a8;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .navbar h1 {
+            color: #fff;
+            font-size: 1.6rem;
+        }
+
+        .navbar .subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+
+        .logout-btn {
+            background-color: #ffffff;
+            color: #4a6653;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #88a591;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 2rem auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: #ffffff;
+            border: 1px solid #e6ede9;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            color: #4a6653;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #9fb9a8;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .subtitle {
+            color: #7a8a7e;
+            font-size: 0.9em;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background-color: #ffffff;
+            border: 1px solid #e6ede9;
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .chart-card h2 {
+            color: #4a6653;
+            margin-bottom: 1.5rem;
+            font-size: 1.3em;
+        }
+
+        .table-card {
+            background-color: #ffffff;
+            border: 1px solid #e6ede9;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .table-card h2 {
+            color: #4a6653;
+            margin-bottom: 1.5rem;
+            font-size: 1.3em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #f5f7f6;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #4a6653;
+            border-bottom: 2px solid #e6ede9;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e6ede9;
+            color: #364a3f;
+        }
+
+        tr:hover {
+            background-color: #f5f7f6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #4a6653;
+            font-size: 1.5em;
+            background-color: #ffffff;
+            border: 1px solid #e6ede9;
+            border-radius: 12px;
+            margin: 2rem auto;
+        }
+
+        .error {
+            background-color: #e57373;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge.success {
+            background-color: #d8e6db;
+            color: #4a6653;
+        }
+
+        .badge.warning {
+            background-color: #ffeaa7;
+            color: #856404;
+        }
+
+        .badge.sold {
+            background-color: #cfd6d2;
+            color: #364a3f;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .navbar .logo {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            table {
+                font-size: 0.85em;
+            }
+
+            th, td {
+                padding: 0.7rem;
+            }
+
+            .stat-card .value {
+                font-size: 2em;
+            }
+        }
+
+        /* Animación de carga */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .loading {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">
+            <div>
+                <h1>📊 Dashboard TRADEco</h1>
+                <div class="subtitle">Panel de Administración</div>
+            </div>
+        </div>
+        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+    </div>
+
+    <div class="container">
+        <div id="error-container"></div>
+        <div id="loading" class="loading">Cargando estadísticas...</div>
+
+        <!-- Tarjetas de Estadísticas -->
+        <div class="stats-grid" id="stats-grid" style="display: none;">
+            <div class="stat-card">
+                <h3>👥 Total Usuarios</h3>
+                <div class="value" id="total-users">0</div>
+                <div class="subtitle" id="new-users-subtitle">+0 este mes</div>
+            </div>
+            <div class="stat-card">
+                <h3>📦 Total Productos</h3>
+                <div class="value" id="total-products">0</div>
+                <div class="subtitle" id="new-products-subtitle">+0 este mes</div>
+            </div>
+            <div class="stat-card">
+                <h3>✅ Disponibles</h3>
+                <div class="value" id="available-products">0</div>
+                <div class="subtitle">Productos activos</div>
+            </div>
+            <div class="stat-card">
+                <h3>💰 Vendidos</h3>
+                <div class="value" id="sold-products">0</div>
+                <div class="subtitle">Productos vendidos</div>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="charts-grid" id="charts-grid" style="display: none;">
+            <div class="chart-card">
+                <h2>📈 Productos por Categoría</h2>
+                <canvas id="categoryChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h2>👥 Crecimiento de Usuarios</h2>
+                <canvas id="growthChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Top Sellers -->
+        <div class="table-card" id="sellers-table" style="display: none;">
+            <h2>🏆 Top Vendedores</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Total Productos</th>
+                        <th>Disponibles</th>
+                    </tr>
+                </thead>
+                <tbody id="sellers-tbody"></tbody>
+            </table>
+        </div>
+
+        <!-- Actividad Reciente -->
+        <div class="table-card" id="activity-table" style="display: none;">
+            <h2>🕒 Productos Recientes</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Usuario</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody id="activity-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let token = localStorage.getItem('token');
+
+        // Verificar autenticación
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        // Función para hacer peticiones
+        async function fetchAPI(endpoint) {
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.status === 401 || response.status === 403) {
+                logout();
+                return null;
+            }
+            
+            return await response.json();
+        }
+
+        // Cargar estadísticas generales
+        async function loadStats() {
+            try {
+                const result = await fetchAPI('/dashboard/stats');
+                
+                if (result && result.success) {
+                    const data = result.data;
+                    
+                    document.getElementById('total-users').textContent = data.users.total;
+                    document.getElementById('total-products').textContent = data.products.total;
+                    document.getElementById('available-products').textContent = data.products.available;
+                    document.getElementById('sold-products').textContent = data.products.sold;
+                    
+                    document.getElementById('new-users-subtitle').textContent = 
+                        `+${data.users.new_last_30_days} últimos 30 días`;
+                    document.getElementById('new-products-subtitle').textContent = 
+                        `+${data.products.new_last_30_days} últimos 30 días`;
+                    
+                    document.getElementById('stats-grid').style.display = 'grid';
+                }
+            } catch (error) {
+                showError('Error al cargar estadísticas');
+                console.error(error);
+            }
+        }
+
+        // Cargar gráfico de categorías
+        async function loadCategoryChart() {
+            try {
+                const result = await fetchAPI('/dashboard/products-by-category');
+                
+                if (result && result.success) {
+                    const data = result.data;
+                    const ctx = document.getElementById('categoryChart').getContext('2d');
+                    
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(item => item.categoria),
+                            datasets: [{
+                                label: 'Total',
+                                data: data.map(item => item.total),
+                                backgroundColor: 'rgba(159, 185, 168, 0.8)',
+                                borderColor: 'rgba(159, 185, 168, 1)',
+                                borderWidth: 2,
+                                borderRadius: 8
+                            }, {
+                                label: 'Disponibles',
+                                data: data.map(item => item.disponibles),
+                                backgroundColor: 'rgba(216, 230, 219, 0.8)',
+                                borderColor: 'rgba(216, 230, 219, 1)',
+                                borderWidth: 2,
+                                borderRadius: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: '#364a3f',
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        color: '#364a3f'
+                                    },
+                                    grid: {
+                                        color: '#e6ede9'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: '#364a3f'
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error al cargar gráfico de categorías:', error);
+            }
+        }
+
+        // Cargar gráfico de crecimiento
+        async function loadGrowthChart() {
+            try {
+                const result = await fetchAPI('/dashboard/users-growth');
+                
+                if (result && result.success) {
+                    const data = result.data;
+                    const ctx = document.getElementById('growthChart').getContext('2d');
+                    
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.map(item => item.month),
+                            datasets: [{
+                                label: 'Nuevos Usuarios',
+                                data: data.map(item => item.count),
+                                backgroundColor: 'rgba(159, 185, 168, 0.2)',
+                                borderColor: 'rgba(74, 102, 83, 1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#9fb9a8',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5,
+                                pointHoverRadius: 7
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: '#364a3f',
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        color: '#364a3f'
+                                    },
+                                    grid: {
+                                        color: '#e6ede9'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: '#364a3f'
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    
+                    document.getElementById('charts-grid').style.display = 'grid';
+                }
+            } catch (error) {
+                console.error('Error al cargar gráfico de crecimiento:', error);
+            }
+        }
+
+        // Cargar top sellers
+        async function loadTopSellers() {
+            try {
+                const result = await fetchAPI('/dashboard/top-sellers');
+                
+                if (result && result.success) {
+                    const data = result.data;
+                    const tbody = document.getElementById('sellers-tbody');
+                    
+                    tbody.innerHTML = data.map(seller => `
+                        <tr>
+                            <td><strong>${seller.username}</strong></td>
+                            <td>${seller.total_products}</td>
+                            <td>${seller.available}</td>
+                        </tr>
+                    `).join('');
+                    
+                    document.getElementById('sellers-table').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al cargar top sellers:', error);
+            }
+        }
+
+        // Cargar actividad reciente
+        async function loadRecentActivity() {
+            try {
+                const result = await fetchAPI('/dashboard/recent-activity');
+                
+                if (result && result.success) {
+                    const products = result.data.recent_products;
+                    const tbody = document.getElementById('activity-tbody');
+                    
+                    tbody.innerHTML = products.map(product => {
+                        let badgeClass = 'success';
+                        if (product.estado === 'vendido') badgeClass = 'sold';
+                        else if (product.estado === 'reservado') badgeClass = 'warning';
+                        
+                        return `
+                            <tr>
+                                <td><strong>${product.nombre}</strong></td>
+                                <td>${product.username}</td>
+                                <td>${product.categoria}</td>
+                                <td>$${product.precio}</td>
+                                <td>
+                                    <span class="badge ${badgeClass}">
+                                        ${product.estado}
+                                    </span>
+                                </td>
+                                <td>${new Date(product.created_at).toLocaleDateString('es-AR')}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                    
+                    document.getElementById('activity-table').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al cargar actividad reciente:', error);
+            }
+        }
+
+        // Mostrar error
+        function showError(message) {
+            const errorContainer = document.getElementById('error-container');
+            errorContainer.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        // Cargar todos los datos
+        async function loadDashboard() {
+            document.getElementById('loading').style.display = 'block';
+            
+            await loadStats();
+            await loadCategoryChart();
+            await loadGrowthChart();
+            await loadTopSellers();
+            await loadRecentActivity();
+            
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // Inicializar
+        loadDashboard();
+
+        // Actualizar cada 5 minutos
+        setInterval(loadDashboard, 300000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TRADEco - Mi Perfil</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-light">
+  
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg" style="background-color:#e6ede9;">
+    <div class="container">
+      <a class="navbar-brand fw-bold text-success d-flex align-items-center" href="index.html">
+        <i class="bi bi-tshirt me-2 text-success fs-4"></i> TRADEco
+      </a>
+      <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link text-success" href="index.html">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link text-success" href="publicar.html">Publicar</a></li>
+          <li class="nav-item"><a class="nav-link text-success active fw-bold" href="perfil.html">Perfil</a></li>
+          <li class="nav-item"><a class="nav-link text-success" href="beneficios.html">Beneficios</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="container my-5">
+    <div class="row">
+      
+      <!-- COLUMNA IZQUIERDA: Información del perfil -->
+      <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i class="bi bi-person-circle text-success" style="font-size: 5rem;"></i>
+            </div>
+            <h4 class="text-success" id="profileUsername">Cargando...</h4>
+            <p class="text-muted" id="profileEmail"></p>
+            <hr>
+            <div class="text-start">
+              <p class="mb-2"><strong>Nombre:</strong> <span id="profileNombre"></span></p>
+              <p class="mb-2"><strong>Teléfono:</strong> <span id="profileTelefono"></span></p>
+              <p class="mb-2"><strong>Dirección:</strong> <span id="profileDireccion"></span></p>
+              <p class="mb-2"><strong>Miembro desde:</strong> <span id="profileCreatedAt"></span></p>
+            </div>
+            <button class="btn btn-outline-success w-100 mt-3" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+              <i class="bi bi-pencil"></i> Editar Perfil
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA: Productos del usuario -->
+      <div class="col-md-8">
+        <div class="card shadow-sm">
+          <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-bag"></i> Mis Publicaciones</h5>
+          </div>
+          <div class="card-body">
+            
+            <!-- Spinner de carga -->
+            <div id="loadingProducts" class="text-center py-4">
+              <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Cargando...</span>
+              </div>
+            </div>
+            
+            <!-- Contenedor de productos -->
+            <div class="row g-3" id="myProductsContainer">
+              <!-- Los productos se cargarán aquí -->
+            </div>
+            
+            <!-- Mensaje cuando no hay productos -->
+            <div id="noMyProducts" class="text-center py-4" style="display: none;">
+              <i class="bi bi-inbox fs-1 text-muted"></i>
+              <p class="text-muted mt-3">Aún no has publicado productos</p>
+              <a href="publicar.html" class="btn btn-success">Publicar ahora</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- MODAL EDITAR PERFIL -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title text-success">Editar Perfil</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="editProfileForm">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Nombre completo</label>
+              <input type="text" class="form-control" id="editNombre" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Teléfono</label>
+              <input type="tel" class="form-control" id="editTelefono" placeholder="+54 11 1234-5678">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Dirección</label>
+              <input type="text" class="form-control" id="editDireccion" placeholder="Av. Corrientes 1234">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-success">Guardar cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="text-center py-3 mt-5" style="background-color:#e6ede9;">
+    <p class="mb-0 text-success">🌱 TRADEco - Moda Circular & Trueques</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="api.js"></script>
+  
+  <script>
+    // Verificar autenticación
+    if (!isAuthenticated()) {
+      showAlert('Debes iniciar sesión para ver tu perfil', 'warning');
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 2000);
+    }
+
+    let currentUser = null;
+
+    // Cargar datos del perfil
+    async function loadProfile() {
+      try {
+        const result = await getMyProfile();
+        
+        if (result.success) {
+          currentUser = result.data;
+          
+          // Actualizar UI con datos del usuario
+          document.getElementById('profileUsername').textContent = `@${currentUser.username}`;
+          document.getElementById('profileEmail').textContent = currentUser.email;
+          document.getElementById('profileNombre').textContent = currentUser.nombre;
+          document.getElementById('profileTelefono').textContent = currentUser.telefono || 'No especificado';
+          document.getElementById('profileDireccion').textContent = currentUser.direccion || 'No especificada';
+          
+          // Formatear fecha
+          if (currentUser.created_at) {
+            const date = new Date(currentUser.created_at);
+            document.getElementById('profileCreatedAt').textContent = date.toLocaleDateString('es-AR');
+          }
+          
+          // Cargar productos del usuario
+          loadMyProducts();
+        } else {
+          showAlert('Error al cargar perfil', 'danger');
+        }
+      } catch (error) {
+        showAlert('Error de conexión con el servidor', 'danger');
+      }
+    }
+
+    // Cargar productos del usuario
+    async function loadMyProducts() {
+      const loadingProducts = document.getElementById('loadingProducts');
+      const myProductsContainer = document.getElementById('myProductsContainer');
+      const noMyProducts = document.getElementById('noMyProducts');
+      
+      try {
+        const result = await getUserProducts(currentUser.id);
+        
+        loadingProducts.style.display = 'none';
+        
+        if (result.success && result.data.length > 0) {
+          myProductsContainer.innerHTML = '';
+          
+          result.data.forEach(product => {
+            const imageUrl = product.imagen_url 
+              ? `http://localhost:5000${product.imagen_url}` 
+              : 'https://via.placeholder.com/400x300';
+            
+            myProductsContainer.innerHTML += `
+              <div class="col-md-6">
+                <div class="card h-100">
+                  <img src="${imageUrl}" 
+                       class="card-img-top" 
+                       alt="${product.nombre}"
+                       style="height: 200px; object-fit: cover;"
+                       onerror="this.src='https://via.placeholder.com/400x300'">
+                  <div class="card-body">
+                    <span class="badge bg-success mb-2">${product.categoria}</span>
+                    <h6 class="card-title">${product.nombre}</h6>
+                    <p class="fw-bold text-success">$${product.precio}</p>
+                    <div class="d-flex gap-2">
+                      <button class="btn btn-sm btn-outline-danger" onclick="deleteMyProduct('${product.id}')">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+        } else {
+          noMyProducts.style.display = 'block';
+        }
+      } catch (error) {
+        loadingProducts.style.display = 'none';
+        showAlert('Error al cargar tus productos', 'danger');
+      }
+    }
+
+    // Eliminar producto
+    async function deleteMyProduct(productId) {
+      if (!confirm('¿Estás seguro de eliminar este producto?')) {
+        return;
+      }
+      
+      try {
+        const result = await deleteProduct(productId);
+        
+        if (result.success) {
+          showAlert('Producto eliminado', 'success');
+          loadMyProducts(); // Recargar productos
+        } else {
+          showAlert(result.message, 'danger');
+        }
+      } catch (error) {
+        showAlert('Error al eliminar producto', 'danger');
+      }
+    }
+
+    // Formulario de edición de perfil
+    document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const userData = {
+        nombre: document.getElementById('editNombre').value,
+        telefono: document.getElementById('editTelefono').value,
+        direccion: document.getElementById('editDireccion').value
+      };
+      
+      try {
+        const result = await updateMyProfile(userData);
+        
+        if (result.success) {
+          showAlert('Perfil actualizado', 'success');
+          
+          // Cerrar modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
+          modal.hide();
+          
+          // Recargar perfil
+          loadProfile();
+        } else {
+          showAlert(result.message, 'danger');
+        }
+      } catch (error) {
+        showAlert('Error al actualizar perfil', 'danger');
+      }
+    });
+
+    // Abrir modal con datos actuales
+    document.getElementById('editProfileModal').addEventListener('show.bs.modal', () => {
+      if (currentUser) {
+        document.getElementById('editNombre').value = currentUser.nombre;
+        document.getElementById('editTelefono').value = currentUser.telefono || '';
+        document.getElementById('editDireccion').value = currentUser.direccion || '';
+      }
+    });
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', loadProfile);
+  </script>
+</body>
+</html>
